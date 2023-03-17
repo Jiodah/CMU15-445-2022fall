@@ -89,6 +89,14 @@ class BPlusTree {
   KeyComparator comparator_;
   int leaf_max_size_;
   int internal_max_size_;
+  auto FindLeafPage(const KeyType &key) -> Page *;
+  void InsertInParent(Page *page_leaf, const KeyType &key, Page *page_bother);
+  void DeleteEntry(Page *&page, const KeyType &key);
+  void AdjustRootPage(BPlusTreePage *b_node);
+  void Coalesce(Page *page, Page *bother_page, const KeyType &parent_key);
+  void Redistribute(Page *page, Page *bother_page, Page *parent_page, const KeyType &parent_key, bool ispre);
+  void Redistribute2(Page *page, Page *bother_page, Page *parent_page, const KeyType &parent_key);
+  auto GetMaxsize(BPlusTreePage *page) const -> int;
 };
 
 }  // namespace bustub

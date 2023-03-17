@@ -42,6 +42,19 @@ class BPlusTreeInternalPage : public BPlusTreePage {
   void SetKeyAt(int index, const KeyType &key);
   auto ValueAt(int index) const -> ValueType;
 
+  auto Lookup(const KeyType &key, const KeyComparator &keyComparator) -> ValueType;
+  void SetValueAt(int index, const ValueType &value);
+  void Insert(const MappingType &value, const KeyComparator &keyComparator);
+  void Split(const KeyType &key, Page *page_bother, Page *page_parent_page, const KeyComparator &keyComparator,
+             BufferPoolManager *buffer_pool_manager_);
+  void DeleteFirst();
+  void InsertFirst(const KeyType &key, const ValueType &value);
+  auto KeyIndex(const KeyType &key, const KeyComparator &keyComparator) -> int;
+  auto Delete(const KeyType &key, const KeyComparator &keyComparator) -> bool;
+  void GetBotherPage(page_id_t child_page_id, Page *&bother_page, KeyType &key, bool &ispre,
+                     BufferPoolManager *buffer_pool_manager_);
+  void Merge(const KeyType &key, Page *right_page, BufferPoolManager *buffer_pool_manager_);
+
  private:
   // Flexible array member for page data.
   MappingType array_[1];
