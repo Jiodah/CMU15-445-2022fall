@@ -66,6 +66,7 @@ auto BPLUSTREE_TYPE::FindLeafPageRW(const KeyType &key, Transaction *transaction
   Page *curr_page = buffer_pool_manager_->FetchPage(root_page_id_);
   while (true) {
     if (curr_page == nullptr) {
+      latch_.unlock();
       return nullptr;
     }
     if (op == Operation::READ) {
