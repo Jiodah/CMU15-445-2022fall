@@ -3,6 +3,7 @@
  */
 #include <cassert>
 
+#include "common/config.h"
 #include "storage/index/index_iterator.h"
 
 namespace bustub {
@@ -12,7 +13,7 @@ namespace bustub {
  * set your own input parameters
  */
 INDEX_TEMPLATE_ARGUMENTS
-INDEXITERATOR_TYPE::IndexIterator() = default;
+INDEXITERATOR_TYPE::IndexIterator() : page_id_(INVALID_PAGE_ID) {}
 
 INDEX_TEMPLATE_ARGUMENTS
 INDEXITERATOR_TYPE::IndexIterator(Page *curr_page, int index, page_id_t page_id, BufferPoolManager *bufferPoolManager)
@@ -39,12 +40,15 @@ auto INDEXITERATOR_TYPE::operator++() -> INDEXITERATOR_TYPE & {
   auto curr_node = reinterpret_cast<B_PLUS_TREE_LEAF_PAGE_TYPE *>(curr_page_->GetData());
   if (index_ == curr_node->GetSize() && curr_node->GetNextPageId() != INVALID_PAGE_ID) {
     auto next_page = buffer_pool_manager_->FetchPage(curr_node->GetNextPageId());
+    next_page->RLatch();
+    curr_page_->RUnlatch();
     buffer_pool_manager_->UnpinPage(curr_node->GetPageId(), false);
     curr_page_ = next_page;
     page_id_ = curr_page_->GetPageId();
     index_ = 0;
   }
   if (index_ == curr_node->GetSize() && curr_node->GetNextPageId() == INVALID_PAGE_ID) {
+    curr_page_->RUnlatch();
     buffer_pool_manager_->UnpinPage(curr_node->GetPageId(), false);
   }
   return *this;

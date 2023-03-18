@@ -20,6 +20,8 @@
 .vscode
 #OS X specific files.
 .DS_store
+# dev files
+.devcontainer
 # Core files
 #core
 

@@ -166,11 +166,13 @@ auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::GetBotherPage(page_id_t child_page_id, Page
   }
   if (i >= 1) {
     bother_page = buffer_pool_manager_->FetchPage(ValueAt(i - 1));
+    bother_page->WLatch();
     key = KeyAt(i);
     ispre = true;
     return;
   }
   bother_page = buffer_pool_manager_->FetchPage(ValueAt(i + 1));
+  bother_page->WLatch();
   key = KeyAt(i + 1);
   ispre = false;
 }

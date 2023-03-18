@@ -20,7 +20,7 @@
 #include "storage/page/b_plus_tree_leaf_page.h"
 
 namespace bustub {
-
+enum Operation { READ, INSERT, DELETE };
 #define BPLUSTREE_TYPE BPlusTree<KeyType, ValueType, KeyComparator>
 
 /**
@@ -89,14 +89,16 @@ class BPlusTree {
   KeyComparator comparator_;
   int leaf_max_size_;
   int internal_max_size_;
-  auto FindLeafPage(const KeyType &key) -> Page *;
-  void InsertInParent(Page *page_leaf, const KeyType &key, Page *page_bother);
-  void DeleteEntry(Page *&page, const KeyType &key);
-  void AdjustRootPage(BPlusTreePage *b_node);
-  void Coalesce(Page *page, Page *bother_page, const KeyType &parent_key);
-  void Redistribute(Page *page, Page *bother_page, Page *parent_page, const KeyType &parent_key, bool ispre);
-  void Redistribute2(Page *page, Page *bother_page, Page *parent_page, const KeyType &parent_key);
-  auto GetMaxsize(BPlusTreePage *page) const -> int;
+  std::mutex latch_;
+  auto FindLeafPageRW(const KeyType &key, Transaction *transaction, Operation op) -> Page *;
+  void InsertInParentRW(Page *page_leaf, const KeyType &key, Page *page_bother, Transaction *transaction);
+  void DeleteEntryRW(Page *&page, const KeyType &key, Transaction *transaction);
+  void AdjustRootPageRW(Page *page, Transaction *transaction);
+  void CoalesceRW(Page *page, Page *bother_page, const KeyType &parent_key, Transaction *transaction);
+  void RedistributeRW(Page *page, Page *bother_page, Page *parent_page, const KeyType &parent_key, bool ispre,
+                      Transaction *transaction);
+  auto UnlockAndUnpin(Transaction *transaction, Operation op) -> void;
+  auto IsSafe(Page *page, Operation op) -> bool;
 };
 
 }  // namespace bustub

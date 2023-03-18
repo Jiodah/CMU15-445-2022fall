@@ -64,6 +64,7 @@ auto BufferPoolManagerInstance::NewPgImp(page_id_t *page_id) -> Page * {
 }
 
 auto BufferPoolManagerInstance::FetchPgImp(page_id_t page_id) -> Page * {
+  assert(page_id != INVALID_PAGE_ID);
   std::scoped_lock<std::mutex> lock(latch_);
   frame_id_t frame_id = -1;
   if (page_table_->Find(page_id, frame_id)) {
