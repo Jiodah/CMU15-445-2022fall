@@ -62,7 +62,7 @@ auto BPLUSTREE_TYPE::FindLeafPageRW(const KeyType &key, Transaction *transaction
   if (IsEmpty()) {
     return nullptr;
   }
-  // latch_.lock();
+  latch_.lock();
   Page *curr_page = buffer_pool_manager_->FetchPage(root_page_id_);
   while (true) {
     if (curr_page == nullptr) {
@@ -92,7 +92,6 @@ auto BPLUSTREE_TYPE::FindLeafPageRW(const KeyType &key, Transaction *transaction
     curr_page = buffer_pool_manager_->FetchPage(root_page_id_);
   }
   assert(root_page_id_ == curr_page->GetPageId());
-  latch_.unlock();
   auto curr_page_inter = reinterpret_cast<InternalPage *>(curr_page->GetData());
   while (!curr_page_inter->IsLeafPage()) {
     Page *next_page = buffer_pool_manager_->FetchPage(curr_page_inter->Lookup(key, comparator_));
@@ -117,6 +116,7 @@ auto BPLUSTREE_TYPE::FindLeafPageRW(const KeyType &key, Transaction *transaction
     curr_page = next_page;
     curr_page_inter = next_page_inter;
   }
+  latch_.unlock();
   return curr_page;
 }
 
@@ -125,7 +125,7 @@ auto BPLUSTREE_TYPE::IsSafe(Page *page, Operation op) -> bool {
   auto node = reinterpret_cast<BPlusTreePage *>(page->GetData());
   // 插入时，如果有一个页是非满的，那么上面的锁都能释放了，因为不会分裂到这之上了
   if (op == Operation::INSERT) {
-    return node->GetSize() < (node->IsLeafPage() ? leaf_max_size_  - 1 : internal_max_size_);
+    return node->GetSize() < (node->IsLeafPage() ? leaf_max_size_ - 1 : internal_max_size_);
   }
   // 删除，如果有一个页比 minSize 大，那么删除后不会影响到父页，可以认为安全
   return node->GetSize() > node->GetMinSize();
@@ -305,7 +305,8 @@ auto BPLUSTREE_TYPE::DeleteEntryRW(Page *&page, const KeyType &key, Transaction 
     auto parent_node = reinterpret_cast<InternalPage *>(parent_page->GetData());
     parent_node->GetBotherPage(page->GetPageId(), bother_page, parent_key, ispre, buffer_pool_manager_);
     auto bother_node = reinterpret_cast<BPlusTreePage *>(bother_page->GetData());
-    if (bother_node->GetSize() + b_node->GetSize() <= (b_node->IsLeafPage() ? leaf_max_size_ - 1 : internal_max_size_)) {
+    if (bother_node->GetSize() + b_node->GetSize() <=
+        (b_node->IsLeafPage() ? leaf_max_size_ - 1 : internal_max_size_)) {
       if (!ispre) {
         std::swap(page, bother_page);
       }
