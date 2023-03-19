@@ -12,8 +12,8 @@
 
 #pragma once
 
+#include <memory>
 #include <vector>
-
 #include "execution/executor_context.h"
 #include "execution/executors/abstract_executor.h"
 #include "execution/plans/seq_scan_plan.h"
