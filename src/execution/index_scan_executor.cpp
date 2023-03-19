@@ -30,7 +30,7 @@ auto IndexScanExecutor::Next(Tuple *tuple, RID *rid) -> bool {
       return true;
     }
   }
-  return true;
+  return false;
 }
 
 }  // namespace bustub
