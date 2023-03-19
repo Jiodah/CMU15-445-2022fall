@@ -54,8 +54,8 @@ class NestedLoopJoinExecutor : public AbstractExecutor {
   auto GetOutputSchema() const -> const Schema & override { return plan_->OutputSchema(); };
 
  private:
-  auto InnerJoin(const Value &cmp, const Schema &schema, Tuple *tuple) -> bool;
-  auto LeftJoin(const Value &cmp, const Schema &schema, Tuple *tuple) -> bool;
+  auto InnerJoin(const Schema &schema, Tuple *tuple) -> bool;
+  auto LeftJoin(const Schema &schema, Tuple *tuple) -> bool;
   /** The NestedLoopJoin plan node to be executed. */
   const NestedLoopJoinPlanNode *plan_;
   bool is_ineer_{false};

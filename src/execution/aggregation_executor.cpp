@@ -37,9 +37,6 @@ void AggregationExecutor::Init() {
 }
 
 auto AggregationExecutor::Next(Tuple *tuple, RID *rid) -> bool {
-  if (successful_) {
-    return false;
-  }
   Schema schema(plan_->OutputSchema());
   if (aht_iterator_ != aht_.End()) {
     std::vector<Value> value(aht_iterator_.Key().group_bys_);
@@ -53,24 +50,27 @@ auto AggregationExecutor::Next(Tuple *tuple, RID *rid) -> bool {
   }
   // 空表执行 select count(*) from t1;
   // 对 varchar 类型的 v1 执行 select min(v1) from t1;
-  if (plan_->group_bys_.empty()) {
-    std::vector<Value> value;
-    for (auto aggregate : plan_->agg_types_) {
-      switch (aggregate) {
-        case AggregationType::CountStarAggregate:
-          value.push_back(ValueFactory::GetIntegerValue(0));
-          break;
-        case AggregationType::CountAggregate:
-        case AggregationType::SumAggregate:
-        case AggregationType::MinAggregate:
-        case AggregationType::MaxAggregate:
-          value.push_back(ValueFactory::GetNullValueByType(TypeId::INTEGER));
-          break;
-      }
-    }
-    *tuple = {value, &schema};
+  if (!successful_) {
     successful_ = true;
-    return true;
+    if (plan_->group_bys_.empty()) {
+      std::vector<Value> value;
+      for (auto aggregate : plan_->agg_types_) {
+        switch (aggregate) {
+          case AggregationType::CountStarAggregate:
+            value.push_back(ValueFactory::GetIntegerValue(0));
+            break;
+          case AggregationType::CountAggregate:
+          case AggregationType::SumAggregate:
+          case AggregationType::MinAggregate:
+          case AggregationType::MaxAggregate:
+            value.push_back(ValueFactory::GetNullValueByType(TypeId::INTEGER));
+            break;
+        }
+      }
+      *tuple = {value, &schema};
+      successful_ = true;
+      return true;
+    }
   }
   return false;
 }

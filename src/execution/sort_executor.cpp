@@ -13,27 +13,16 @@ void SortExecutor::Init() {
   while (child_executor_->Next(&tuple, &rid)) {
     sorted_tuples_.push_back(tuple);
   }
-
-  auto a = plan_->GetOrderBy();
   std::sort(sorted_tuples_.begin(), sorted_tuples_.end(), [this](const Tuple &a, const Tuple &b) {
     for (auto [order_by_type, expr] : plan_->GetOrderBy()) {
-      if (order_by_type == OrderByType::DEFAULT || order_by_type == OrderByType::ASC) {
-        if (expr->Evaluate(&a, child_executor_->GetOutputSchema())
-                .CompareLessThan(expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue) {
-          return true;
-        }
-        if (expr->Evaluate(&a, child_executor_->GetOutputSchema())
-                .CompareGreaterThan(expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue) {
-          return false;
-        }
-      }
+      bool default_order_by = (order_by_type == OrderByType::DEFAULT || order_by_type == OrderByType::ASC);
       if (expr->Evaluate(&a, child_executor_->GetOutputSchema())
               .CompareLessThan(expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue) {
-        return false;
+        return default_order_by;
       }
       if (expr->Evaluate(&a, child_executor_->GetOutputSchema())
               .CompareGreaterThan(expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue) {
-        return true;
+        return !default_order_by;
       }
     }
     return true;

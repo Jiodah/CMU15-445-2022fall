@@ -12,10 +12,8 @@ auto Optimizer::OptimizeSortLimitAsTopN(const AbstractPlanNodeRef &plan) -> Abst
     children.emplace_back(OptimizeSortLimitAsTopN(child));
   }
   auto optimized_plan = plan->CloneWithChildren(std::move(children));
-
   if (optimized_plan->GetType() == PlanType::Limit) {
     const auto &limit_plan = dynamic_cast<const LimitPlanNode &>(*optimized_plan);
-    // Has exactly two children
     BUSTUB_ENSURE(limit_plan.children_.size() == 1, "SLAT should have exactly 1 children.");
     if (limit_plan.GetChildAt(0)->GetType() == PlanType::Sort) {
       const auto &child = dynamic_cast<const SortPlanNode &>(*limit_plan.GetChildAt(0));

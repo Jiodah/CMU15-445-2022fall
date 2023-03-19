@@ -65,7 +65,6 @@ auto NestIndexJoinExecutor::Next(Tuple *tuple, RID *rid) -> bool {
         tuple_values.push_back(ValueFactory::GetNullValueByType(table_info_->schema_.GetColumn(i).GetType()));
       }
       *tuple = {tuple_values, &plan_->OutputSchema()};
-
       return true;
     }
   }
