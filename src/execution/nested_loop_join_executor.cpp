@@ -62,9 +62,7 @@ auto NestedLoopJoinExecutor::InnerJoin(const Schema &schema, Tuple *tuple) -> bo
   if (index_ != 0) {
     for (uint32_t j = index_; j < right_tuples_.size(); j++) {
       index_ = (index_ + 1) % right_tuples_.size();
-      if (plan_->Predicate()
-              .EvaluateJoin(&left_tuple_, left_schema_, &right_tuples_[j], right_schema_)
-              .GetAs<bool>()) {
+      if (plan_->Predicate().EvaluateJoin(&left_tuple_, left_schema_, &right_tuples_[j], right_schema_).GetAs<bool>()) {
         std::vector<Value> value;
         for (uint32_t i = 0; i < left_schema_.GetColumnCount(); i++) {
           value.push_back(left_tuple_.GetValue(&left_schema_, i));
@@ -81,9 +79,7 @@ auto NestedLoopJoinExecutor::InnerJoin(const Schema &schema, Tuple *tuple) -> bo
     while (left_executor_->Next(&left_tuple_, &left_rid_)) {
       for (const auto &right_tuple : right_tuples_) {
         index_ = (index_ + 1) % right_tuples_.size();
-        if (plan_->Predicate()
-                .EvaluateJoin(&left_tuple_, left_schema_, &right_tuple, right_schema_)
-                .GetAs<bool>()) {
+        if (plan_->Predicate().EvaluateJoin(&left_tuple_, left_schema_, &right_tuple, right_schema_).GetAs<bool>()) {
           std::vector<Value> value;
           for (uint32_t i = 0; i < left_schema_.GetColumnCount(); i++) {
             value.push_back(left_tuple_.GetValue(&left_schema_, i));
@@ -108,9 +104,7 @@ auto NestedLoopJoinExecutor::LeftJoin(const Schema &schema, Tuple *tuple) -> boo
   if (index_ != 0) {
     for (uint32_t j = index_; j < right_tuples_.size(); j++) {
       index_ = (index_ + 1) % right_tuples_.size();
-      if (plan_->Predicate()
-              .EvaluateJoin(&left_tuple_, left_schema_, &right_tuples_[j], right_schema_)
-              .GetAs<bool>()) {
+      if (plan_->Predicate().EvaluateJoin(&left_tuple_, left_schema_, &right_tuples_[j], right_schema_).GetAs<bool>()) {
         std::vector<Value> value;
         for (uint32_t i = 0; i < left_schema_.GetColumnCount(); i++) {
           value.push_back(left_tuple_.GetValue(&left_schema_, i));
@@ -141,9 +135,7 @@ auto NestedLoopJoinExecutor::LeftJoin(const Schema &schema, Tuple *tuple) -> boo
       is_match_ = false;
       for (const auto &right_tuple : right_tuples_) {
         index_ = (index_ + 1) % right_tuples_.size();
-        if (plan_->Predicate()
-                .EvaluateJoin(&left_tuple_, left_schema_, &right_tuple, right_schema_)
-                .GetAs<bool>()) {
+        if (plan_->Predicate().EvaluateJoin(&left_tuple_, left_schema_, &right_tuple, right_schema_).GetAs<bool>()) {
           std::vector<Value> value;
           for (uint32_t i = 0; i < left_schema_.GetColumnCount(); i++) {
             value.push_back(left_tuple_.GetValue(&left_schema_, i));
