@@ -26,6 +26,14 @@ void DeleteExecutor::Init() {
   table_heap_ = table_info_->table_.get();
   iterator_ = std::make_unique<TableIterator>(table_heap_->Begin(exec_ctx_->GetTransaction()));
   child_executor_->Init();
+  try {
+    if (!exec_ctx_->GetLockManager()->LockTable(exec_ctx_->GetTransaction(), LockManager::LockMode::INTENTION_EXCLUSIVE,
+                                                table_info_->oid_)) {
+      throw ExecutionException("lock table intention exclusive failed");
+    }
+  } catch (TransactionAbortException &e) {
+    throw ExecutionException("delete TransactionAbort");
+  }
 }
 
 auto DeleteExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
@@ -35,6 +43,14 @@ auto DeleteExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
   int count = 0;
   while (child_executor_->Next(tuple, rid)) {
     if (table_heap_->MarkDelete(*rid, exec_ctx_->GetTransaction())) {
+      try {
+        if (!exec_ctx_->GetLockManager()->LockRow(exec_ctx_->GetTransaction(), LockManager::LockMode::EXCLUSIVE,
+                                                  table_info_->oid_, *rid)) {
+          throw ExecutionException("lock row exclusive failed");
+        }
+      } catch (TransactionAbortException &e) {
+        throw ExecutionException("delete TransactionAbort");
+      }
       auto indexs = exec_ctx_->GetCatalog()->GetTableIndexes(table_name_);
       for (auto index : indexs) {
         auto key = (*tuple).KeyFromTuple(table_info_->schema_, index->key_schema_, index->index_->GetKeyAttrs());

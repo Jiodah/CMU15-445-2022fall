@@ -506,49 +506,50 @@ void LockManager::RunCycleDetection() {
       while (HasCycle(&txn_id)) {
         auto transaction = TransactionManager::GetTransaction(txn_id);
         transaction->LockTxn();
-        auto shared_row_lock_set = transaction->GetSharedRowLockSet();
-        while (!shared_row_lock_set->empty()) {
-          auto oid = shared_row_lock_set->begin()->first;
-          auto rid = *shared_row_lock_set->begin()->second.begin();
-          UnlockRow(transaction, oid, rid);
-        }
+        transaction->SetState(TransactionState::ABORTED);
+        // auto shared_row_lock_set = transaction->GetSharedRowLockSet();
+        // while (!shared_row_lock_set->empty()) {
+        //   auto oid = shared_row_lock_set->begin()->first;
+        //   auto rid = *shared_row_lock_set->begin()->second.begin();
+        //   UnlockRow(transaction, oid, rid);
+        // }
 
-        auto exclusive_row_lock_set = transaction->GetExclusiveRowLockSet();
-        while (!exclusive_row_lock_set->empty()) {
-          auto oid = exclusive_row_lock_set->begin()->first;
-          auto rid = *exclusive_row_lock_set->begin()->second.begin();
-          UnlockRow(transaction, oid, rid);
-        }
+        // auto exclusive_row_lock_set = transaction->GetExclusiveRowLockSet();
+        // while (!exclusive_row_lock_set->empty()) {
+        //   auto oid = exclusive_row_lock_set->begin()->first;
+        //   auto rid = *exclusive_row_lock_set->begin()->second.begin();
+        //   UnlockRow(transaction, oid, rid);
+        // }
 
-        auto shared_table_lock_set = transaction->GetSharedTableLockSet();
-        while (!shared_table_lock_set->empty()) {
-          auto oid = *shared_table_lock_set->begin();
-          UnlockTable(transaction, oid);
-        }
+        // auto shared_table_lock_set = transaction->GetSharedTableLockSet();
+        // while (!shared_table_lock_set->empty()) {
+        //   auto oid = *shared_table_lock_set->begin();
+        //   UnlockTable(transaction, oid);
+        // }
 
-        auto shared_intention_exclusive_table_lock_set = transaction->GetSharedIntentionExclusiveTableLockSet();
-        while (!shared_intention_exclusive_table_lock_set->empty()) {
-          auto oid = *shared_intention_exclusive_table_lock_set->begin();
-          UnlockTable(transaction, oid);
-        }
+        // auto shared_intention_exclusive_table_lock_set = transaction->GetSharedIntentionExclusiveTableLockSet();
+        // while (!shared_intention_exclusive_table_lock_set->empty()) {
+        //   auto oid = *shared_intention_exclusive_table_lock_set->begin();
+        //   UnlockTable(transaction, oid);
+        // }
 
-        auto intention_shared_table_lock_set = transaction->GetIntentionSharedTableLockSet();
-        while (!intention_shared_table_lock_set->empty()) {
-          auto oid = *intention_shared_table_lock_set->begin();
-          UnlockTable(transaction, oid);
-        }
+        // auto intention_shared_table_lock_set = transaction->GetIntentionSharedTableLockSet();
+        // while (!intention_shared_table_lock_set->empty()) {
+        //   auto oid = *intention_shared_table_lock_set->begin();
+        //   UnlockTable(transaction, oid);
+        // }
 
-        auto exclusive_table_lock_set = transaction->GetExclusiveTableLockSet();
-        while (!exclusive_table_lock_set->empty()) {
-          auto oid = *exclusive_table_lock_set->begin();
-          UnlockTable(transaction, oid);
-        }
+        // auto exclusive_table_lock_set = transaction->GetExclusiveTableLockSet();
+        // while (!exclusive_table_lock_set->empty()) {
+        //   auto oid = *exclusive_table_lock_set->begin();
+        //   UnlockTable(transaction, oid);
+        // }
 
-        auto intention_exclusive_table_lock_set = transaction->GetIntentionExclusiveTableLockSet();
-        while (!intention_exclusive_table_lock_set->empty()) {
-          auto oid = *intention_exclusive_table_lock_set->begin();
-          UnlockTable(transaction, oid);
-        }
+        // auto intention_exclusive_table_lock_set = transaction->GetIntentionExclusiveTableLockSet();
+        // while (!intention_exclusive_table_lock_set->empty()) {
+        //   auto oid = *intention_exclusive_table_lock_set->begin();
+        //   UnlockTable(transaction, oid);
+        // }
 
         transaction->UnlockTxn();
 
