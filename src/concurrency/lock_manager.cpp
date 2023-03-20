@@ -418,7 +418,7 @@ auto LockManager::DFS(std::vector<txn_id_t> cycle_vector, bool &is_cycle, txn_id
     auto iter = std::find(cycle_vector.begin(), cycle_vector.end(), txn);
     if (iter != cycle_vector.end()) {
       is_cycle = true;
-      *txn_id = *(iter++);
+      *txn_id = *iter;
       while (iter != cycle_vector.end()) {
         if (*txn_id < *iter) {
           *txn_id = *iter;
@@ -471,7 +471,6 @@ void LockManager::RunCycleDetection() {
     std::this_thread::sleep_for(cycle_detection_interval);
     {
       waits_for_latch_.lock();
-      waits_for_.clear();
       table_lock_map_latch_.lock();
       for (const auto &table_pairs : table_lock_map_) {
         table_pairs.second->latch_.lock();
@@ -504,9 +503,8 @@ void LockManager::RunCycleDetection() {
 
       txn_id_t txn_id;
       while (HasCycle(&txn_id)) {
-        auto transaction = TransactionManager::GetTransaction(txn_id);
-        transaction->LockTxn();
-        transaction->SetState(TransactionState::ABORTED);
+        // auto transaction = TransactionManager::GetTransaction(txn_id);
+        // transaction->LockTxn();
         // auto shared_row_lock_set = transaction->GetSharedRowLockSet();
         // while (!shared_row_lock_set->empty()) {
         //   auto oid = shared_row_lock_set->begin()->first;
@@ -550,8 +548,8 @@ void LockManager::RunCycleDetection() {
         //   auto oid = *intention_exclusive_table_lock_set->begin();
         //   UnlockTable(transaction, oid);
         // }
-
-        transaction->UnlockTxn();
+        // transaction->SetState(TransactionState::ABORTED);
+        // transaction->UnlockTxn();
 
         for (const auto &wait : waits_for_) {
           RemoveEdge(wait.first, txn_id);
@@ -569,6 +567,8 @@ void LockManager::RunCycleDetection() {
         }
         row_lock_map_latch_.unlock();
       }
+      // table_lock_map_latch_.unlock();
+      // row_lock_map_latch_.unlock();
       waits_for_latch_.unlock();
     }
   }

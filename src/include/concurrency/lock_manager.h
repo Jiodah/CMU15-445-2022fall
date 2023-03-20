@@ -62,6 +62,14 @@ class LockManager {
 
   class LockRequestQueue {
    public:
+    LockRequestQueue() = default;
+    ~LockRequestQueue() {
+      for (auto iter = request_queue_.begin(); iter != request_queue_.end();) {
+        auto i = *iter;
+        request_queue_.erase(iter++);
+        delete i;
+      }
+    }
     /** List of lock requests for the same resource (table or row) */
     std::list<LockRequest *> request_queue_;
     /** For notifying blocked transactions on this rid */
